@@ -1,0 +1,98 @@
+@isTest
+public class AccountTriggerHandlerTest {
+
+    @isTest
+    static void onBeforeInsertTest(){
+        Id userId = UserInfo.getUserId();
+        Region__c regionUK = new Region__c(Name = 'test uk', DASA_Innovation_Partner__c = userId);
+        insert regionUK;
+        Region__c regionWorld = new Region__c(Name = 'test world', DASA_Innovation_Partner__c = userId);
+        insert regionWorld;
+
+        Postcode__c postcodeUK = new Postcode__c(Name = 'A1 1AA', Region__c = regionUK.Id);
+        insert postcodeUK;
+        Postcode__c postcodeWorld = new Postcode__c(Name = PostcodeServices.INTERNATIONAL, Region__c = regionWorld.Id);
+        insert postcodeWorld;
+
+        Test.startTest();
+            //United Kingdom
+            //test lowercase postcode
+            AccountTriggerHandler.isBeforeInsertFirstRun = true;
+            Account accountUK = new Account(Name = 'test uk', BillingCountry = 'United Kingdom', BillingCountryCode = 'GB', BillingPostalCode = 'a1 1aa', DNB_DUNS_Number__c = '123456789');
+            insert accountUK;
+
+            //International
+            AccountTriggerHandler.isBeforeInsertFirstRun = true;
+            Account accountWorld = new Account(Name = 'test world', BillingCountry = 'United States', BillingCountryCode = 'US', BillingPostalCode = '90210', DNB_DUNS_Number__c = '123456788');
+            insert accountWorld;
+        Test.stopTest();
+
+        accountUK = [SELECT Postcode_Region__c, DASA_Innovation_Partner__c FROM Account WHERE Id = :accountUK.Id];
+        System.assertEquals(accountUK.Postcode_Region__c, regionUK.Id);
+        System.assertEquals(accountUK.DASA_Innovation_Partner__c, userId);
+
+        accountWorld = [SELECT Postcode_Region__c, DASA_Innovation_Partner__c FROM Account WHERE Id = :accountWorld.Id];
+        System.assertEquals(accountWorld.Postcode_Region__c, regionWorld.Id);
+        System.assertEquals(accountWorld.DASA_Innovation_Partner__c, userId);
+    }
+ 
+    @isTest
+    static void onBeforeUpdateTest(){
+        Id userId = UserInfo.getUserId();
+        List<Region__c> regionList = new List<Region__c>();
+        Region__c regionUK1 = new Region__c(Name = 'test uk1', DASA_Innovation_Partner__c = userId);
+        Region__c regionUK2 = new Region__c(Name = 'test uk2', DASA_Innovation_Partner__c = userId);
+        Region__c regionUK3 = new Region__c(Name = 'test uk3', DASA_Innovation_Partner__c = userId);
+        Region__c regionWorld = new Region__c(Name = 'test world', DASA_Innovation_Partner__c = userId);
+        regionList.add(regionUK1);
+        regionList.add(regionUK2);
+        regionList.add(regionUK3);
+        regionList.add(regionWorld);
+        insert regionList;
+
+        List<Postcode__c> postcodeList = new List<Postcode__c>();
+        Postcode__c postcodeUK1 = new Postcode__c(Name = 'A1 1AA', Region__c = regionUK1.Id);
+        Postcode__c postcodeUK2 = new Postcode__c(Name = 'A1 1AB', Region__c = regionUK2.Id);
+        Postcode__c postcodeUK3 = new Postcode__c(Name = 'A1 1AC', Region__c = regionUK3.Id);
+        Postcode__c postcodeWorld = new Postcode__c(Name = PostcodeServices.INTERNATIONAL, Region__c = regionWorld.Id);
+        postcodeList.add(postcodeUK1);
+        postcodeList.add(postcodeUK2);
+        postcodeList.add(postcodeUK3);
+        postcodeList.add(postcodeWorld);
+        insert postcodeList;
+
+        List<Account> accountList = new List<Account>();
+        Account a1 = new Account(Name = 'test1', BillingCountry = 'United Kingdom', BillingCountryCode = 'GB', BillingPostalCode = 'A1 1AA', DNB_DUNS_Number__c = '123456789');
+        Account a2 = new Account(Name = 'test2', BillingCountry = 'United Kingdom', BillingCountryCode = 'GB', BillingPostalCode = 'A1 1AB', DNB_DUNS_Number__c = '123456788');
+        Account a3 = new Account(Name = 'test3', BillingCountry = 'United Kingdom', BillingCountryCode = 'GB', BillingPostalCode = 'A1 1AC', DNB_DUNS_Number__c = '123456787');
+        Account a4 = new Account(Name = 'test4', BillingCountry = 'United States', BillingCountryCode = 'US', BillingPostalCode = '90210', DNB_DUNS_Number__c = '123456786');
+        Account a5 = new Account(Name = 'test5', BillingCountry = 'United States', BillingCountryCode = 'US', BillingPostalCode = '90211', DNB_DUNS_Number__c = '123456785');
+        accountList.add(a1);
+        accountList.add(a2);
+        accountList.add(a3);
+        accountList.add(a4);
+        accountList.add(a5);
+        insert accountList;
+
+        Test.startTest();
+            a1.BillingPostalCode = 'A1 1AB';
+            a2.BillingPostalCode = 'A1 1AC';
+            a3.BillingCountry = 'United States';
+            a3.BillingCountryCode = 'US';
+            a4.BillingCountry = 'United Kingdom';
+            a4.BillingCountryCode = 'GB';
+            a4.BillingPostalCode = 'A1 1AA';
+            AccountTriggerHandler.isBeforeUpdateFirstRun = true;
+            update accountList;
+        Test.stopTest();
+
+        accountList = [SELECT BillingCountry, BillingPostalCode, Postcode_Region__c, DASA_Innovation_Partner__c FROM Account];
+        for(Account a : accountList){
+            System.assertEquals(a.DASA_Innovation_Partner__c, userId);
+            if(a.BillingCountry == 'United Kingdom' && a.BillingPostalCode == 'A1 1AA') System.assertEquals(a.Postcode_Region__c, regionUK1.Id);
+            if(a.BillingCountry == 'United Kingdom' && a.BillingPostalCode == 'A1 1AB') System.assertEquals(a.Postcode_Region__c, regionUK2.Id);
+            if(a.BillingCountry == 'United Kingdom' && a.BillingPostalCode == 'A1 1AC') System.assertEquals(a.Postcode_Region__c, regionUK3.Id);
+            if(a.BillingCountry != 'United Kingdom') System.assertEquals(a.Postcode_Region__c, regionWorld.Id);
+        }
+    }
+}
