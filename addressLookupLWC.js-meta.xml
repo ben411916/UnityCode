@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>50</apiVersion>
+	<isExposed>true</isExposed>
+	<targets>
+		<target>lightning__FlowScreen</target>
+			<target>lightning__HomePage</target>
+			<target>lightning__RecordPage</target>
+			<target>lightning__AppPage</target>
+	</targets>
+	<targetConfigs>
+		<targetConfig targets="lightning__RecordPage">
+			<!--<property
+				name="recordId"
+				type="String"
+				label="Record Id"
+				description="Automatically bind the page's record id to the component variable"
+				default="{!recordId}" /> -->
+				<property label="Edit Only" name="editonly" type="Boolean" description="Allow only edit address functionality." default="false" />
+		</targetConfig>
+		<targetConfig targets="lightning__FlowScreen">
+			<property name="organisation" type="String" label="Organisation" default="" />
+			<property name="geoLon" type="String" label="geoLon" default="" />
+			<property name="geoLat" type="String" label="geoLat" default="" />
+			<property name="sub_building" type="String" label="sub_building" default="" />
+			<property name="building_name" type="String" label="building_name" default="" />
+			<property name="building_number" type="String" label="building_number" default="" />
+			<property name="primary_street" type="String" label="primary_street" default="" />
+			<property name="locality" type="String" label="locality" default="" />
+			<property name="postcode" type="String" label="postcode" default="" />
+			<property name="uprn" type="String" label="uprn" default="" />
+			<property label="Edit Only" name="editonly" type="Boolean" role="inputOnly" description="Allow only edit address functionality." default="false" />
+		</targetConfig>
+	</targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,156 @@
+<template>
+    <lightning-card title="Address Lookup Client" icon-name="standard:channel_programs">
+      <template if:true={isSuccess}>
+        <div class="slds-notify_container slds-is-relative">
+            <div class="slds-notify slds-notify_toast slds-theme_success" role="status">
+              <span class="slds-assistive-text">success</span>
+              <span class="slds-icon_container slds-icon-utility-success slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                  <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#success"></use>
+                </svg>
+              </span>
+              <div class="slds-notify__content">
+                <h2 class="slds-text-heading_small ">{successMessage}</h2>
+              </div>
+              <div class="slds-notify__close">
+                <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close">
+                  <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                  </svg>
+                  <span class="slds-assistive-text">Close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+    </template>
+
+        <div class="slds-m-around_medium">
+            <!-- input postcode to search on -->
+            <lightning-input type="search" onchange={handleSearchKeyChange} class="slds-m-bottom_small" label="Search" value={searchKey}></lightning-input>
+            <!-- invoke find and save once selected -->
+            <lightning-button-group>
+                <lightning-button onclick={handleFind} label="Find" variant="neutral" icon-name="utility:search"></lightning-button>
+                <lightning-button onclick={handleClick} label="Save" variant="brand" icon-name="utility:save"></lightning-button>
+            </lightning-button-group>
+            <!-- feedback while testing -->
+						<br/><br/>
+						<template if:true={picklistVisible}>
+								<div class="slds-form-element__control">
+            		<div class="slds-select_container">
+                <select class="slds-select" 
+                        onchange={handleAddressChange} >
+                    <option value="Select">Select</option>
+                    <template for:each={allAddresses} for:item="address">
+                        <option key={address.label} class="uiInputSelectOption" value={address.value}>{address.label}</option>
+                    </template>
+                		</select>
+            </div>
+										<br/><br/>
+										<template if:true={recordVisible}>
+												
+										<div class="slds-box">
+												<aura:set attribute="media">
+												<lightning-icon icon-name="standard:address" alternative-text="Selected Property" title="Selected Property"></lightning-icon><br/><br/>
+												</aura:set>
+												<dl class="slds-dl_horizontal">
+														<dt class="slds-dl_horizontal__label" if:true={organisation}>
+																<p class="slds-truncate" title="Organisation">Organisation: {organisation}</p>
+														</dt>
+														<dt class="slds-dl_horizontal__label" if:true={sub_building}>
+																<p class="slds-truncate" title="Building Number">Sub Building: {sub_building}</p>
+														</dt>
+														<dt class="slds-dl_horizontal__label" if:true={building_name}>
+																<p class="slds-truncate" title="Building Number">Building Name: {building_name}</p>
+														</dt>
+														<dt class="slds-dl_horizontal__label" if:true={building_number}>
+																<p class="slds-truncate" title="Building Number">Building Number: {building_number}</p>
+														</dt>
+														<dt class="slds-dl_horizontal__label" if:true={primary_street}>
+																<p class="slds-truncate" title="Primary Street">Street: {primary_street}</p>
+														</dt>
+														<br/>
+														<dt class="slds-dl_horizontal__label">
+																<p class="slds-truncate" title="Postcode">Postcode: {postcode}</p>
+														</dt>
+														<dt class="slds-dl_horizontal__label">
+																<p class="slds-truncate" title="Locality">Locality: {locality}</p>
+														</dt>
+														<br/>
+														<dt class="slds-dl_horizontal__label">
+																<p class="slds-truncate" title="UPRN">UPRN: {uprn}</p>
+														</dt>
+												</dl>
+												<br/><br/>
+												<div if:true={mapMarkers}>
+														<lightning-map map-markers={mapMarkers} zoom-level='16'> </lightning-map>
+												</div>
+												</div>
+												</template>
+        </div>
+								<template if:true={isDialogVisible}>
+        <div class="slds-container_small">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 data-id="title" class="slds-text-heading_medium slds-hyphenate">{title}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+												<lightning-radio-group name="radioGroup1"
+                           label="Create Associated Location : Head Office"
+                           options={options1}
+                           value={value1}
+                           onchange={handleChangeHeadOffice}
+                           required
+                           type="button"></lightning-radio-group>
+										<br/><br/>
+										<lightning-radio-group name="radioGroup2"
+                           label="Create Associated Location : Billing Address"
+                           options={options2}
+                           value={value2}
+                           onchange={handleChangeBillingAddress}
+                           required
+                           type="button"></lightning-radio-group>
+										<br/><br/>
+										<lightning-radio-group name="radioGroup3"
+                           label="Create Associated Location : Operational Site"
+                           options={options3}
+                           value={value3}
+                           onchange={handleChangeOperationalSite}
+                           required
+                           type="button"></lightning-radio-group>
+                                    <br/><br/>
+										<lightning-radio-group name="radioGroup4"
+                           label="Create Associated Location : Compliance Site"
+                           options={options4}
+                           value={value4}
+                           onchange={handleChangeComplianceSite}
+                           required
+                           type="button"></lightning-radio-group>
+										
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="neutral"
+                                          name="cancel"
+                                          label={cancelLabel}
+                                          title={cancelLabel}
+                                          onclick={handleCancel} ></lightning-button>
+                        <lightning-button variant="brand"
+                                          name="confirm"
+                                          label={confirmLabel}
+                                          title={confirmLabel}
+                                          onclick={handleSave} ></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+						</template>
+            <!--TODO: create proper error display-->
+            <template if:true={error}>
+                {error}<br>
+                {stack}
+            </template>
+        </div>  
+    </lightning-card>
+</template>
