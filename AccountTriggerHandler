@@ -1,0 +1,76 @@
+/**
+ * @author Ben Allington
+ * @date 2020/05/17
+ * 
+ * @group Add Assessors and Moderators
+ */
+
+public with sharing class AccountTriggerHandler {
+
+    public static Boolean bypassTrigger = false;
+    public static Boolean isBeforeInsertFirstRun = true;
+    public static Boolean isBeforeUpdateFirstRun = true;
+    
+    public void onBeforeInsert(List<Account> accountList){
+        System.debug('AccountTriggerHandler onBeforeInsert ' + isBeforeInsertFirstRun);
+        if(isBeforeInsertFirstRun) isBeforeInsertFirstRun = false;
+        else return;
+        
+        List<String> postcodes = new List<String>();
+        for(Account a : accountList){
+            postcodes.add(a.BillingPostalCode);
+        }
+
+        Map<String, Postcode__c> postcodeMap = PostcodeServices.lookupPostcodes(postcodes);
+        for(Account a : accountList){
+            String country = a.BillingCountry;
+            String countryCode = a.BillingCountryCode;
+            String postcode = String.isBlank(a.BillingPostalCode) ? null : a.BillingPostalCode.toUpperCase();
+            System.debug('### Account country: ' + country + ', countryCode: ' + countryCode + ', postcode: ' + postcode);
+
+            //country is UK
+            if((country == PostcodeServices.UNITED_KINGDOM || countryCode == PostcodeServices.UNITED_KINGDOM_CODE) && postcode != null && postcodeMap != null && postcodeMap.containsKey(postcode) && postcodeMap.get(postcode).Region__c != null){
+                a.Postcode_Region__c = postcodeMap.get(postcode).Region__c;
+                a.DASA_Innovation_Partner__c = postcodeMap.get(postcode).Region__r.DASA_Innovation_Partner__c;
+            }
+
+            //country is not UK, postcode is blank, postcode is unrecognised
+            if(((country != PostcodeServices.UNITED_KINGDOM && countryCode != PostcodeServices.UNITED_KINGDOM_CODE) || postcode == null || (postcode != null && !postcodeMap.containsKey(postcode))) && postcodeMap.get(PostcodeServices.INTERNATIONAL) != null && postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__c != null){
+                a.Postcode_Region__c = postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__c;
+                a.DASA_Innovation_Partner__c = postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__r.DASA_Innovation_Partner__c;
+            }
+        }
+    }
+    
+    public void onBeforeUpdate(Map<Id, Account> newMap, Map<Id, Account> oldMap){
+        System.debug('AccountTriggerHandler onBeforeUpdate ' + isBeforeUpdateFirstRun);        
+        if(isBeforeUpdateFirstRun) isBeforeUpdateFirstRun = false;
+        else return;
+        
+        List<String> postcodes = new List<String>();
+        for(Account a : newMap.values()){
+            postcodes.add(a.BillingPostalCode);
+        }
+
+        Map<String, Postcode__c> postcodeMap = PostcodeServices.lookupPostcodes(postcodes);
+        for(Account a : newMap.values()){
+            String country = a.BillingCountry;
+            String countryCode = a.BillingCountryCode;
+            String postcode = String.isBlank(a.BillingPostalCode) ? null : a.BillingPostalCode.toUpperCase();
+            System.debug('### Account country: ' + country + ', countryCode: ' + countryCode + ', postcode: ' + postcode);
+
+            //country is UK
+            if((country == PostcodeServices.UNITED_KINGDOM || countryCode == PostcodeServices.UNITED_KINGDOM_CODE) && postcode != null && (postcode != oldMap.get(a.Id).BillingPostalCode || countryCode != oldMap.get(a.Id).BillingCountryCode || a.Postcode_Region__c == null) && postcodeMap != null && postcodeMap.containsKey(postcode) && postcodeMap.get(postcode).Region__c != null){
+                a.Postcode_Region__c = postcodeMap.get(postcode).Region__c;
+                a.DASA_Innovation_Partner__c = postcodeMap.get(postcode).Region__r.DASA_Innovation_Partner__c;
+            }
+
+            //country is not UK, postcode is blank, postcode is unrecognised
+            if(((country != PostcodeServices.UNITED_KINGDOM && countryCode != PostcodeServices.UNITED_KINGDOM_CODE) || postcode == null || (postcode != null && !postcodeMap.containsKey(postcode))) && postcodeMap.get(PostcodeServices.INTERNATIONAL) != null && postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__c != null){
+                a.Postcode_Region__c = postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__c;
+                a.DASA_Innovation_Partner__c = postcodeMap.get(PostcodeServices.INTERNATIONAL).Region__r.DASA_Innovation_Partner__c;
+            }
+        }
+    }
+    
+}
