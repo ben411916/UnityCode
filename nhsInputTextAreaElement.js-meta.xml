@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>NHS Input Text Area Element</masterLabel>
+    <description>NHS Input Text Area Element</description>
+    <apiVersion>49.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property label="Title" name="titleText" type="String" default="Title" role="inputOnly" description="Title of the element"/>
+            <property label="Label" name="labelText" type="String" description="Label for the input text" role="inputOnly"/>
+            <property label="Hint under label" name="hintLabelText" type="String" description="Optional hint under the label" role="inputOnly"/>
+            <property label="First hint" name="hint1Text" type="String" role="inputOnly" description="Optional first hint"/>
+            <property label="Required" name="requiredField" type="Boolean" role="inputOnly" description="True/false"/>
+            <property label="Custom error message" name="customErrorMessage" type="String" role="inputOnly" description="Error displayed"/>
+            <property label="Number of Row" name="rows" type="Integer" role="inputOnly" description="e.g 1 or 2.."/>
+            <property label="Default value/output" name="enteredValue" type="String" description="Label/Value of the preselected option"/>
+            <property label="Label for the summary" name="labelForSummary" type="String" role="inputOnly" description="Label to be used in the summary and as reference"/>
+            <property label="Dependent value" name="dependentValueForSummary" type="String" role="inputOnly" description="Value of the component this component is dependent"/>
+            <property label="Dependent label" name="dependentLabelForSummary" type="String" role="inputOnly" description="Label of the component this component is dependent"/>
+            <property label="Required in the summary" name="requiredInSummary" type="Boolean" role="inputOnly" description="True/false"/>
+            <property label="Profanity Filter" name="profanityCheck" type="Boolean" role="inputOnly" description="True/false"/>
+            <property label="Input Sanitisation" name="inputSanitisation" type="Boolean" role="inputOnly" description="True/false"/>
+            <property label="Sort order number" name="sortOrderNumber" type="Integer" role="inputOnly" description="Number to identify the order in the summary"/>
+            <property label="Identifier" name="identifier" type="String" role="inputOnly" description="To connect a Input Element to the Display Element, it must match"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,61 @@
+<!--
+@author:        Sanket SUpe
+@company:       NHS
+@Date:          16/09/2020 - Created.
+                25/03/2021 Update AM
+ -->
+<!-- NHS Input Text Area -->
+<template>
+    <c-nhs-c-s-s-provider></c-nhs-c-s-s-provider>
+    <div class="sts-nhs">
+        <div class="nhsuk-width-container">
+            <div class="nhsuk-grid-row">
+                <div class={getGridClass}>
+                    <div class={formGroupCSS}>   
+                        <template if:true={titleText}>
+                            <template if:false={labelText}>
+                                <h2 class="nhsuk-label-wrapper">
+                                    <span id="title-id" class="nhsuk-label nhsuk-label--m">
+                                        {titleText}
+                                    </span>                                    
+                                </h2>
+                            </template>
+                            <template if:true={labelText}>
+                                <h2 class="nhsuk-heading-m">
+                                    {titleText}
+                                </h2>
+                            </template>
+                        </template>
+                        
+                        <template if:true={hasHint1}>
+                            <span id="hint-id" class="nhsuk-hint nhsuk-select-hint">
+                                <lightning-formatted-rich-text value={hint1Text}></lightning-formatted-rich-text>
+                            </span>
+                        </template>
+
+                        <div id={inputsDivId}>
+                            <template if:true={customErrorDetail}>
+                                <span class="nhsuk-error-message">
+                                    <span class="nhsuk-u-visually-hidden">Error:</span> {customErrorDetail}
+                                </span>  
+                            </template>
+                            <template if:true={labelText}>
+                                <span id="label-id" class="nhsuk-label">
+                                    {labelText}
+                                </span>
+                            </template>                                
+                            <template if:true={hasHintLabel}>
+                                <span id="hint-label-id" class="nhsuk-hint nhsuk-select-hint-label">
+                                    <lightning-formatted-rich-text value={hintLabelText}></lightning-formatted-rich-text>
+                                </span>
+                            </template>
+                            <textarea id={inputsId} name={enteredValue} onchange={textChange} class={inputClass} rows={rows}>
+                                {enteredValue}
+                            </textarea>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </div>           
+</template>
