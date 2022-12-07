@@ -1,0 +1,77 @@
+/**
+ * @author Ben Allington
+ * @group	Framework level
+ * @description	rest_ApexRouter class defines Rest end point and delegate the call treatment to the handler
+**/
+@RestResource(urlMapping='/router/v1/*')
+global inherited sharing class rest_ApexRouter {
+    @HttpPost
+    global static void handleNotification() {
+        try {
+            RestContext.response.StatusCode = rest_HTTPStatusCodeConstants.OK;
+            RestContext.response.addHeader('Content-Type', 'application/json');
+            final String handlerName = RestContext.request.requestURI.substring(RestContext.request.requestURI.lastIndexOf('/')+1);
+            System.debug(handlerName);
+            final rest_RestHandler notifHandler = (rest_RestHandler) Type.forName(handlerName).newInstance();
+            notifHandler.init(RestContext.request,RestContext.response);
+            notifHandler.execute();
+            } catch (Exception e) {
+                System.Debug(e);
+                System.Debug(e.getCause());
+                System.Debug(e.getMessage());
+                System.Debug(e.getStackTraceString());
+                final RouterRestResponse responseContent = new RouterRestResponse();
+                responseContent.data = null;
+                responseContent.errors.Add(new RouterRestError(e.getTypeName(), e.getMessage()));
+                RestContext.response.responseBody = Blob.valueOf(JSON.serialize(responseContent));
+                RestContext.response.StatusCode = rest_HTTPStatusCodeConstants.INTERNAL_SERVER_ERROR;
+            }
+        }
+    global static HTTPResponse handleResponse(String endPoint,String enteredText){
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(endPoint+enteredText);
+        request.setMethod('GET');
+        String username = 'veolia';
+        String apiKey = rest_HTTPStatusCodeConstants.API_KEY;  
+
+        request.setHeader('x-client-id', username);
+        request.setHeader('x-api-key', apiKey);
+        HttpResponse response = http.send(request);
+        return response;
+    }
+    
+	@AuraEnabled
+    global static Map<String, Object> findAddressFromStringGET(String endPoint,String enteredText) {
+        HttpResponse response = handleResponse(endPoint, enteredText);
+        Map<String, Object> results = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+        return results;
+	}
+
+    /**
+    * @group	Framework level
+    * @description	RouterRestResponse class defines the response global envelop type
+    */
+    public class RouterRestResponse {
+        public List<Object> data;
+        public List<Object> errors;
+
+        public RouterRestResponse(){
+            this.data = new List<Object>();
+            this.errors = new List<RouterRestError>();
+        }
+    }
+
+    /**
+    * @group	Framework level
+    * @description	RouterRestError class defines the response envelop type for errors
+    */
+    public class RouterRestError {
+        public String code;
+        public String message;
+        public RouterRestError(final String code, final String message) {
+            this.code = code;
+            this.message = message;
+        }
+    }
+}
